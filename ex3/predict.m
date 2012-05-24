@@ -22,7 +22,11 @@ p = zeros(size(X, 1), 1);
 %
 
 
-
+% add 1's to X in the theta_zero position
+X = [ones(m,1), X];
+a2 = sigmoid(X * Theta1');
+a3 = sigmoid([ones(m,1), a2] * Theta2');
+[max_prob, p] = max(a3, [], 2);
 
 
 
