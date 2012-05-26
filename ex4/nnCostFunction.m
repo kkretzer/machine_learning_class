@@ -77,21 +77,35 @@ Theta2_reg = [zeros(size(Theta2,1),1), Theta2(:, 2:end)];
 J += (lambda * (sum(sum(Theta1_reg .^ 2)) + sum(sum(Theta2_reg .^ 2))))/(2*m);
 
 % Part 2:
-Theta1_grad = zeros(size(Theta1));
-Theta2_grad = zeros(size(Theta2));
-for t = 1:m
-    a1 = X(t,:)';
-    z2 = Theta1 * a1;
-    a2 = [ones(1, size(z2, 2)); sigmoid(z2)];
-    z3 = Theta2 * a2;
-    a3 = sigmoid(z3);
-    delta3 = a3 - yk(t,:)';
-    delta2 = (Theta2' * delta3)(2:end) .* sigmoidGradient(z2);
-    %   printf("expect delta3 to be 10 1:\n");
-    %   size(delta3)
-    Theta1_grad += delta2 * a1';
-    Theta2_grad += delta3 * a2';
-endfor
+
+% this is the initial implementation of backpropagation
+%   see below for vectorized version
+% Theta1_grad = zeros(size(Theta1));
+% Theta2_grad = zeros(size(Theta2));
+% for t = 1:m
+%     a1 = X(t,:)';
+%     z2 = Theta1 * a1;
+%     a2 = [ones(1, size(z2, 2)); sigmoid(z2)];
+%     z3 = Theta2 * a2;
+%     a3 = sigmoid(z3);
+%     delta3 = a3 - yk(t,:)';
+%     delta2 = (Theta2' * delta3)(2:end) .* sigmoidGradient(z2);
+%     Theta1_grad += delta2 * a1';
+%     Theta2_grad += delta3 * a2';
+% endfor
+
+% vectorize the for loop
+a1 = X; % 5000 by 401
+z2 = a1 * Theta1'; % 5000 by 25
+a2 = [ones(size(z2, 1), 1), sigmoid(z2)]; % 5000 by 26
+z3 = a2 * Theta2'; % 5000 by 10
+a3 = sigmoid(z3); % 5000 by 10
+delta3 = a3 - yk; % 5000 by 10
+delta2 = (delta3 * Theta2)(:,2:end) .* sigmoidGradient(z2); % 5000 by 25
+Theta1_grad = delta2' * a1; % 25 by 401
+Theta2_grad = delta3' * a2; % 10 by 26
+
+% regularize the gradients
 Theta1_grad = (Theta1_grad / m) + lambda * Theta1_reg / m;
 Theta2_grad = (Theta2_grad / m) + lambda * Theta2_reg / m;
 
